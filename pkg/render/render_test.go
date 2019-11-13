@@ -97,6 +97,7 @@ func TestRenderer_Render(t *testing.T) {
 		{"Limit < Int2", fields{10, 3, 30, "A", "B"}, []string{"1", "2", "A", "4", "5", "A", "7", "8", "A", "10"}, false},
 		{"Int2 > Int1", fields{20, 5, 3, "A", "B"}, []string{"1", "2", "B", "4", "A", "B", "7", "8", "B", "A", "11", "B", "13", "14", "AB", "16", "17", "B", "19", "A"}, false},
 		{"Standard case", fields{20, 3, 5, "A", "B"}, []string{"1", "2", "A", "4", "B", "A", "7", "8", "A", "B", "11", "A", "13", "14", "AB", "16", "17", "A", "19", "B"}, false},
+		{"Unicode case", fields{20, 3, 5, "喂", "世界"}, []string{"1", "2", "喂", "4", "世界", "喂", "7", "8", "喂", "世界", "11", "喂", "13", "14", "喂世界", "16", "17", "喂", "19", "世界"}, false},
 	}
 	renderer := NewRenderer()
 	for _, tt := range tests {
