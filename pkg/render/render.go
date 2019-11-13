@@ -50,3 +50,41 @@ func NewResponse() *Response {
 		Lines: make(chan string),
 	}
 }
+
+// Renderer represents a renderer for the FizzBuzz Algorithm (see README for details)
+type Renderer struct {
+}
+
+// NewRenderer is the Renderer factory
+func NewRenderer() *Renderer {
+	return &Renderer{}
+}
+
+// Render renders the response associated with the request according to the FizzBuzz algorithm (see README for details)
+func (rr *Renderer) Render(request *Request) (*Response, error) {
+	response := NewResponse()
+	if err := request.Validate(); err != nil {
+		close(response.Lines)
+		return response, err
+	}
+	go func() {
+		for i := 1; i <= request.Limit; i++ {
+			multiple := false
+			line := ""
+			if i%request.Int1 == 0 {
+				multiple = true
+				line += request.Str1
+			}
+			if i%request.Int2 == 0 {
+				multiple = true
+				line += request.Str2
+			}
+			if !multiple {
+				line = fmt.Sprintf("%d", i)
+			}
+			response.Lines <- fmt.Sprint(line)
+		}
+		close(response.Lines)
+	}()
+	return response, nil
+}
