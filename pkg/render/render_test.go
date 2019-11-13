@@ -109,12 +109,12 @@ func TestRenderer_Render(t *testing.T) {
 				Str2:  tt.fields.Str2,
 			}
 			got := make([]string, 0)
-			response, err := renderer.Render(request)
+			response := renderer.Render(request)
 			for line := range response.Lines {
 				got = append(got, line)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Renderer.Render() error = %v, wantErr %v", err, tt.wantErr)
+			if (response.Error != nil) != tt.wantErr {
+				t.Errorf("Renderer.Render() error = %v, wantErr %v", response.Error, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

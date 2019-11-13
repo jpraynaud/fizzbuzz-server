@@ -30,11 +30,11 @@ func (r *Request) Validate() error {
 	var err error = nil
 	switch {
 	case r.Limit < 0:
-		err = fmt.Errorf("Limit must be >= 0, value %d was given", r.Limit)
+		err = fmt.Errorf("limit must be >= 0, value %d was given", r.Limit)
 	case r.Int1 < 1:
-		err = fmt.Errorf("Int1 must be >= 1, value %d was given", r.Int1)
+		err = fmt.Errorf("int1 must be >= 1, value %d was given", r.Int1)
 	case r.Int2 < 1:
-		err = fmt.Errorf("Int2 must be >= 1, value %d was given", r.Int2)
+		err = fmt.Errorf("int2 must be >= 1, value %d was given", r.Int2)
 	}
 	return err
 }
@@ -42,12 +42,14 @@ func (r *Request) Validate() error {
 // Response represents a response that will be returned when a request is rendered
 type Response struct {
 	Lines chan string
+	Error error
 }
 
 // NewResponse is the Response factory
 func NewResponse() *Response {
 	return &Response{
 		Lines: make(chan string),
+		Error: nil,
 	}
 }
 
@@ -61,11 +63,12 @@ func NewRenderer() *Renderer {
 }
 
 // Render renders the response associated with the request according to the FizzBuzz algorithm (see README for details)
-func (rr *Renderer) Render(request *Request) (*Response, error) {
+func (rr *Renderer) Render(request *Request) *Response {
 	response := NewResponse()
 	if err := request.Validate(); err != nil {
 		close(response.Lines)
-		return response, err
+		response.Error = err
+		return response
 	}
 	go func() {
 		for i := 1; i <= request.Limit; i++ {
@@ -86,5 +89,5 @@ func (rr *Renderer) Render(request *Request) (*Response, error) {
 		}
 		close(response.Lines)
 	}()
-	return response, nil
+	return response
 }
