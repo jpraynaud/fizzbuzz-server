@@ -25,12 +25,12 @@ func NewRequest(limit, int1, int2 int, str1, str2 string) *Request {
 }
 
 // Validate checks that the request is valid and can be rendered by the FizzBuzz algorithm (see README for details)
-// i.e. Limit must be >= 0 and Int1/Int2 must be >= 1
+// i.e. Limit/Int1/Int2 must be >= 1
 func (r *Request) Validate() error {
 	var err error = nil
 	switch {
-	case r.Limit < 0:
-		err = fmt.Errorf("limit must be >= 0, value %d was given", r.Limit)
+	case r.Limit < 1:
+		err = fmt.Errorf("limit must be >= 1, value %d was given", r.Limit)
 	case r.Int1 < 1:
 		err = fmt.Errorf("int1 must be >= 1, value %d was given", r.Int1)
 	case r.Int2 < 1:

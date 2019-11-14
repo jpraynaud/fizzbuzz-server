@@ -45,9 +45,9 @@ func TestRequest_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{"Limit < 0", fields{-20, 3, 5, "A", "B"}, true},
+		{"Limit == 0", fields{0, 3, 5, "A", "B"}, true},
 		{"Int1 < 1", fields{20, 0, 5, "A", "B"}, true},
 		{"Int2 < 1", fields{20, 3, -5, "A", "B"}, true},
-		{"Limit == 0", fields{0, 3, 5, "A", "B"}, false},
 		{"Str1 is empty", fields{10, 2, 3, "", "B"}, false},
 		{"Str1 and Str2 are empty", fields{10, 2, 3, "", ""}, false},
 		{"Int1 == Int2", fields{10, 3, 3, "A", "B"}, false},
@@ -87,9 +87,9 @@ func TestRenderer_Render(t *testing.T) {
 		wantErr bool
 	}{
 		{"Limit < 0", fields{-20, 3, 5, "A", "B"}, []string{}, true},
+		{"Limit == 0", fields{0, 3, 5, "A", "B"}, []string{}, true},
 		{"Int1 < 1", fields{20, 0, 5, "A", "B"}, []string{}, true},
 		{"Int2 < 1", fields{20, 3, -5, "A", "B"}, []string{}, true},
-		{"Limit == 0", fields{0, 3, 5, "A", "B"}, []string{}, false},
 		{"Str1 is empty", fields{10, 2, 3, "", "B"}, []string{"1", "", "B", "", "5", "B", "7", "", "B", ""}, false},
 		{"Str1 and Str2 are empty", fields{10, 2, 3, "", ""}, []string{"1", "", "", "", "5", "", "7", "", "", ""}, false},
 		{"Int1 == Int2", fields{10, 3, 3, "A", "B"}, []string{"1", "2", "AB", "4", "5", "AB", "7", "8", "AB", "10"}, false},
