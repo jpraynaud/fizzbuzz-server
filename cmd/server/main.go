@@ -61,18 +61,18 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// pageResponse represents an error response
-type pageResponse struct {
+// apiResponse represents a page response
+type apiResponse struct {
 	Error    bool        `json:"error"`
 	Response interface{} `json:"response"`
 }
 
-// Error page
-func errorPage(w http.ResponseWriter, r *http.Request, status int, message string) {
+// Api error
+func apiError(w http.ResponseWriter, r *http.Request, status int, message string) {
 	log.Errorf("%s - %s - %d - %s", r.Method, r.RequestURI, status, message)
 	w.WriteHeader(status)
-	pageResponse := pageResponse{true, message}
-	json.NewEncoder(w).Encode(pageResponse)
+	apiResponse := apiResponse{true, message}
+	json.NewEncoder(w).Encode(apiResponse)
 }
 
 // Handle FizzBuzz render
@@ -81,17 +81,17 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := r.URL.Query()
 	limit, err := strconv.Atoi(vars.Get("limit"))
 	if err != nil {
-		errorPage(w, r, http.StatusBadRequest, "limit parameter must be an integer\n")
+		apiError(w, r, http.StatusBadRequest, "limit parameter must be an integer\n")
 		return
 	}
 	int1, err := strconv.Atoi(vars.Get("int1"))
 	if err != nil {
-		errorPage(w, r, http.StatusBadRequest, "int1 parameter must be an integer\n")
+		apiError(w, r, http.StatusBadRequest, "int1 parameter must be an integer\n")
 		return
 	}
 	int2, err := strconv.Atoi(vars.Get("int2"))
 	if err != nil {
-		errorPage(w, r, http.StatusBadRequest, "int2 parameter must be an integer\n")
+		apiError(w, r, http.StatusBadRequest, "int2 parameter must be an integer\n")
 		return
 	}
 	str1 := vars.Get("str1")
@@ -102,7 +102,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 	request := render.NewRequest(limit, int1, int2, str1, str2)
 	response := renderer.Render(request)
 	if err := response.Error; err != nil {
-		errorPage(w, r, http.StatusBadRequest, err.Error())
+		apiError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -114,7 +114,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprint(w, line)
 		first = false
-	}
+}
 }
 	// TODO
 }
