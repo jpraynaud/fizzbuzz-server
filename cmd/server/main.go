@@ -115,7 +115,10 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(apiResponse)
 }
 
-// Handles FizzBuzz rendering statistics
+// Handles rendering statistics
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	statistics := render.NewStatistics()
+	topStatistic := statistics.TopStatistic()
+	apiResponse := apiResponse{false, topStatistic}
+	json.NewEncoder(w).Encode(apiResponse)
 }
