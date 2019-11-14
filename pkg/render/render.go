@@ -2,15 +2,20 @@
 package render
 
 import (
+	"encoding/json"
 	"fmt"
+	"sync"
 )
 
 // Request represents a request that will be rendered according to the FizzBuzz algorithm (see README for details)
 // Limit is the number of lines that will be rendered (starting from 1 to Limit)
 // Int1 (or Int2) represents the multiple of the line numbers that will display Str1 (or Str2) instead of their respective line number
 type Request struct {
-	Limit, Int1, Int2 int
-	Str1, Str2        string
+	Limit int    `json:"limit"`
+	Int1  int    `json:"int1"`
+	Int2  int    `json:"int2"`
+	Str1  string `json:"str1"`
+	Str2  string `json:"str2"`
 }
 
 // NewRequest is the Request factory
@@ -55,11 +60,14 @@ func NewResponse() *Response {
 
 // Renderer represents a renderer for the FizzBuzz Algorithm (see README for details)
 type Renderer struct {
+	*Statistics
 }
 
 // NewRenderer is the Renderer factory
 func NewRenderer() *Renderer {
-	return &Renderer{}
+	return &Renderer{
+		Statistics: NewStatistics(),
+	}
 }
 
 // Render renders the response associated with the request according to the FizzBuzz algorithm (see README for details)
@@ -89,5 +97,46 @@ func (rr *Renderer) Render(request *Request) *Response {
 		}
 		close(response.Lines)
 	}()
+	rr.Statistics.Record(request)
 	return response
+}
+
+// Statistics represents statistics of requests rendering
+type Statistics struct {
+	Totals       map[string]int
+	MostRendered string
+	mutex        *sync.RWMutex
+}
+
+var statistics Statistics
+
+// NewStatistics is the Statistics factory
+func NewStatistics() *Statistics {
+	if statistics.mutex == nil {
+		statistics.Totals = make(map[string]int)
+		statistics.mutex = &sync.RWMutex{}
+	}
+	return &statistics
+}
+
+// Reset resets rendering statistics
+func (s *Statistics) Reset() {
+	s.mutex.Lock()
+	s.Totals = make(map[string]int)
+	s.mutex.Unlock()
+}
+
+// Record records rendering statistics
+func (s *Statistics) Record(request *Request) {
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return
+	}
+	key := string(requestJSON)
+	s.mutex.Lock()
+	s.Totals[key]++
+	if s.Totals[key] > s.Totals[s.MostRendered] {
+		s.MostRendered = key
+	}
+	s.mutex.Unlock()
 }
