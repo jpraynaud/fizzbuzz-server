@@ -98,7 +98,7 @@ func TestRenderer_Render(t *testing.T) {
 	}
 }
 
-func TestStatistics_Record(t *testing.T) {
+func TestStatistics(t *testing.T) {
 	// Prepare tests data
 	type fields struct {
 		Limit int
@@ -133,12 +133,14 @@ func TestStatistics_Record(t *testing.T) {
 				statistics.Record(request)
 			}
 			// Check that total renderings recorded matches the total wanted
-			if got := statistics.Totals[*request]; got != tt.iterationsWant {
+			requestStatistic := statistics.Statistic(request)
+			if got := requestStatistic.Total; got != tt.iterationsWant {
 				t.Errorf("Statistics.Record() = %v, want %v", got, tt.iterationsWant)
 			}
 			// Check that the most used request matches the most used request wanted
 			topRequestWant := NewRequest(tt.fieldsMostUsedWant.Limit, tt.fieldsMostUsedWant.Int1, tt.fieldsMostUsedWant.Int2, tt.fieldsMostUsedWant.Str1, tt.fieldsMostUsedWant.Str2)
-			if got := statistics.TopRequest; !reflect.DeepEqual(got, *topRequestWant) {
+			topRequestStatistic := statistics.TopStatistic()
+			if got := topRequestStatistic.Request; !reflect.DeepEqual(got, *topRequestWant) {
 				t.Errorf("Renderer.Render() = %v, want %v", got, topRequestWant)
 			}
 		})
