@@ -8,6 +8,7 @@ import (
 )
 
 func TestRequest_Validate(t *testing.T) {
+	// Prepare tests data
 	type fields struct {
 		Limit int
 		Int1  int
@@ -32,16 +33,13 @@ func TestRequest_Validate(t *testing.T) {
 		{"Int2 > Int1", fields{20, 5, 3, "A", "B"}, false},
 		{"Standard case", fields{20, 3, 5, "A", "B"}, false},
 	}
+	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &Request{
-				Limit: tt.fields.Limit,
-				Int1:  tt.fields.Int1,
-				Int2:  tt.fields.Int2,
-				Str1:  tt.fields.Str1,
-				Str2:  tt.fields.Str2,
-			}
-			if err := r.Validate(); (err != nil) != tt.wantErr {
+			// Create request
+			request := NewRequest(tt.fields.Limit, tt.fields.Int1, tt.fields.Int2, tt.fields.Str1, tt.fields.Str2)
+			// Check request validation matches the one wanted
+			if err := request.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Request.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -49,6 +47,7 @@ func TestRequest_Validate(t *testing.T) {
 }
 
 func TestRenderer_Render(t *testing.T) {
+	// Prepare tests data
 	type fields struct {
 		Limit int
 		Int1  int
@@ -75,21 +74,20 @@ func TestRenderer_Render(t *testing.T) {
 		{"Standard case", fields{20, 3, 5, "A", "B"}, []string{"1", "2", "A", "4", "B", "A", "7", "8", "A", "B", "11", "A", "13", "14", "AB", "16", "17", "A", "19", "B"}, false},
 		{"Unicode case", fields{20, 3, 5, "喂", "世界"}, []string{"1", "2", "喂", "4", "世界", "喂", "7", "8", "喂", "世界", "11", "喂", "13", "14", "喂世界", "16", "17", "喂", "19", "世界"}, false},
 	}
+	// Create renderer
 	renderer := NewRenderer()
+	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := &Request{
-				Limit: tt.fields.Limit,
-				Int1:  tt.fields.Int1,
-				Int2:  tt.fields.Int2,
-				Str1:  tt.fields.Str1,
-				Str2:  tt.fields.Str2,
-			}
+			// Create request
+			request := NewRequest(tt.fields.Limit, tt.fields.Int1, tt.fields.Int2, tt.fields.Str1, tt.fields.Str2)
+			// Render request and convert to slice
 			got := make([]string, 0)
 			response := renderer.Render(request)
 			for line := range response.Lines {
 				got = append(got, line)
 			}
+			// Check that slice matches the one wanted
 			if (response.Error != nil) != tt.wantErr {
 				t.Errorf("Renderer.Render() error = %v, wantErr %v", response.Error, tt.wantErr)
 				return
