@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -105,18 +105,14 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 		apiError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
+	lines := make([]string, 0)
+	for line := range response.Lines {
+		lines = append(lines, line)
+	}
 
 	// Write response
-	first := true
-	for line := range response.Lines {
-		if !first {
-			line = fmt.Sprintf(",%s", line)
-		}
-		fmt.Fprint(w, line)
-		first = false
-}
-}
-	// TODO
+	apiResponse := apiResponse{false, strings.Join(lines, ",")}
+	json.NewEncoder(w).Encode(apiResponse)
 }
 
 // Handles FizzBuzz rendering statistics
