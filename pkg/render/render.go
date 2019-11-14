@@ -100,6 +100,20 @@ func (rr *Renderer) Render(request *Request) *Response {
 	return response
 }
 
+// RequestStatistic represents the rendering statistics of a request
+type RequestStatistic struct {
+	Request `json:"request"`
+	Total   int `json:"total"`
+}
+
+// NewRequestStatistic is the RequestStatistic factory
+func NewRequestStatistic(request *Request, total int) *RequestStatistic {
+	return &RequestStatistic{
+		Request: *request,
+		Total:   total,
+	}
+}
+
 // Statistics represents statistics of requests rendering
 type Statistics struct {
 	Totals     map[Request]int
@@ -135,3 +149,23 @@ func (s *Statistics) Record(request *Request) {
 	s.mutex.Unlock()
 }
 
+// Statistic returns rendering statistics of a request
+func (s *Statistics) Statistic(request *Request) *RequestStatistic {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	if s.Totals[*request] == 0 {
+		return nil
+	}
+	return NewRequestStatistic(request, s.Totals[*request])
+}
+
+// TopStatistic returns rendering statistics of the top request
+func (s *Statistics) TopStatistic() *RequestStatistic {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	topRequest := s.TopRequest
+	if s.Totals[topRequest] == 0 {
+		return nil
+	}
+	return s.Statistic(&topRequest)
+}
