@@ -2,6 +2,7 @@
 package render
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -95,6 +96,64 @@ func TestRenderer_Render(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Renderer.Render() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStatistics_Record(t *testing.T) {
+	// Prepare tests data
+	type fields struct {
+		Limit int
+		Int1  int
+		Int2  int
+		Str1  string
+		Str2  string
+	}
+	tests := []struct {
+		name               string
+		fieldsTodo         fields
+		iterationsTodo     int
+		iterationsWant     int
+		fieldsMostUsedWant fields
+	}{
+		{"Step 1", fields{10, 3, 5, "A", "B"}, 1, 1, fields{10, 3, 5, "A", "B"}},
+		{"Step 2", fields{20, 3, 5, "A", "B"}, 2, 2, fields{20, 3, 5, "A", "B"}},
+		{"Step 3", fields{20, 3, 5, "A", "B"}, 10, 12, fields{20, 3, 5, "A", "B"}},
+		{"Step 4", fields{20, 3, 5, "A", "B"}, 30, 42, fields{20, 3, 5, "A", "B"}},
+		{"Step 5", fields{30, 3, 5, "A", "B"}, 100, 100, fields{30, 3, 5, "A", "B"}},
+	}
+	// Get & reset statistics
+	statistics := NewStatistics()
+	statistics.Reset()
+	// Run tests
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create request
+			request := NewRequest(tt.fieldsTodo.Limit, tt.fieldsTodo.Int1, tt.fieldsTodo.Int2, tt.fieldsTodo.Str1, tt.fieldsTodo.Str2)
+			// Records request multiple times
+			for i := 0; i < tt.iterationsTodo; i++ {
+				statistics.Record(request)
+			}
+			// Check that total renderings recorded matches the total wanted
+			requestJSON, err := json.Marshal(request)
+			if err != nil {
+				t.Errorf("Statistics.Record() error = %v", err)
+				return
+			}
+			key := string(requestJSON)
+			if got := statistics.Totals[key]; got != tt.iterationsWant {
+				t.Errorf("Statistics.Record() = %v, want %v", got, tt.iterationsWant)
+			}
+			// Check that the most used request matches the most used request wanted
+			requestMostUsedWant := NewRequest(tt.fieldsMostUsedWant.Limit, tt.fieldsMostUsedWant.Int1, tt.fieldsMostUsedWant.Int2, tt.fieldsMostUsedWant.Str1, tt.fieldsMostUsedWant.Str2)
+			requestMostUsedWantJSON, err := json.Marshal(requestMostUsedWant)
+			if err != nil {
+				t.Errorf("Statistics.Record() error = %v", err)
+				return
+			}
+			if got := statistics.MostRendered; got != string(requestMostUsedWantJSON) {
+				t.Errorf("Renderer.Render() = %v, want %v", got, requestMostUsedWant)
 			}
 		})
 	}
