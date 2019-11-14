@@ -6,31 +6,6 @@ import (
 	"testing"
 )
 
-func TestNewRequest(t *testing.T) {
-	type args struct {
-		limit int
-		int1  int
-		int2  int
-		str1  string
-		str2  string
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Request
-	}{
-		{"NewRequest 1", args{1, 2, 3, "A", "B"}, &Request{1, 2, 3, "A", "B"}},
-		{"NewRequest 2", args{-1, -2, -3, "AA", "BB"}, &Request{-1, -2, -3, "AA", "BB"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewRequest(tt.args.limit, tt.args.int1, tt.args.int2, tt.args.str1, tt.args.str2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewRequest() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestRequest_Validate(t *testing.T) {
 	type fields struct {
 		Limit int
