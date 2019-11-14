@@ -2,7 +2,6 @@
 package render
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 )
@@ -103,9 +102,9 @@ func (rr *Renderer) Render(request *Request) *Response {
 
 // Statistics represents statistics of requests rendering
 type Statistics struct {
-	Totals       map[string]int
-	MostRendered string
-	mutex        *sync.RWMutex
+	Totals     map[Request]int
+	TopRequest Request
+	mutex      *sync.RWMutex
 }
 
 var statistics Statistics
@@ -113,7 +112,7 @@ var statistics Statistics
 // NewStatistics is the Statistics factory
 func NewStatistics() *Statistics {
 	if statistics.mutex == nil {
-		statistics.Totals = make(map[string]int)
+		statistics.Totals = make(map[Request]int)
 		statistics.mutex = &sync.RWMutex{}
 	}
 	return &statistics
@@ -122,21 +121,17 @@ func NewStatistics() *Statistics {
 // Reset resets rendering statistics
 func (s *Statistics) Reset() {
 	s.mutex.Lock()
-	s.Totals = make(map[string]int)
+	s.Totals = make(map[Request]int)
 	s.mutex.Unlock()
 }
 
 // Record records rendering statistics
 func (s *Statistics) Record(request *Request) {
-	requestJSON, err := json.Marshal(request)
-	if err != nil {
-		return
-	}
-	key := string(requestJSON)
 	s.mutex.Lock()
-	s.Totals[key]++
-	if s.Totals[key] > s.Totals[s.MostRendered] {
-		s.MostRendered = key
+	s.Totals[*request]++
+	if s.Totals[*request] > s.Totals[s.TopRequest] {
+		s.TopRequest = *request
 	}
 	s.mutex.Unlock()
 }
+
