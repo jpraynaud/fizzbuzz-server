@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -60,8 +61,61 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// pageResponse represents an error response
+type pageResponse struct {
+	Error    bool        `json:"error"`
+	Response interface{} `json:"response"`
+}
+
+// Error page
+func errorPage(w http.ResponseWriter, r *http.Request, status int, message string) {
+	log.Errorf("%s - %s - %d - %s", r.Method, r.RequestURI, status, message)
+	w.WriteHeader(status)
+	pageResponse := pageResponse{true, message}
+	json.NewEncoder(w).Encode(pageResponse)
+}
+
 // Handle FizzBuzz render
 func renderHandler(w http.ResponseWriter, r *http.Request) {
+	// Prepare input parameters
+	vars := r.URL.Query()
+	limit, err := strconv.Atoi(vars.Get("limit"))
+	if err != nil {
+		errorPage(w, r, http.StatusBadRequest, "limit parameter must be an integer\n")
+		return
+	}
+	int1, err := strconv.Atoi(vars.Get("int1"))
+	if err != nil {
+		errorPage(w, r, http.StatusBadRequest, "int1 parameter must be an integer\n")
+		return
+	}
+	int2, err := strconv.Atoi(vars.Get("int2"))
+	if err != nil {
+		errorPage(w, r, http.StatusBadRequest, "int2 parameter must be an integer\n")
+		return
+	}
+	str1 := vars.Get("str1")
+	str2 := vars.Get("str2")
+
+	// Render request
+	renderer := render.NewRenderer()
+	request := render.NewRequest(limit, int1, int2, str1, str2)
+	response := renderer.Render(request)
+	if err := response.Error; err != nil {
+		errorPage(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Write response
+	first := true
+	for line := range response.Lines {
+		if !first {
+			line = fmt.Sprintf(",%s", line)
+		}
+		fmt.Fprint(w, line)
+		first = false
+	}
+}
 	// TODO
 }
 
