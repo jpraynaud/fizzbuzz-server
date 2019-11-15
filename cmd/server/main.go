@@ -14,13 +14,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	environment string
-	addr        string
-)
+var renderer *render.Renderer
 
 func main() {
 	// Parse flags
+	var (
+		environment string
+		addr        string
+	)
 	flag.StringVar(&addr, "address", "0.0.0.0:8080", "server listening address")
 	flag.StringVar(&environment, "environment", "development", "server environment (development or production)")
 	flag.Parse()
@@ -33,6 +34,9 @@ func main() {
 	} else {
 		log.SetLevel(log.DebugLevel)
 	}
+
+	// Init FizzBuzz renderer
+	renderer = render.NewRenderer()
 
 	// Start HTTP server
 	log.WithFields(log.Fields{
@@ -98,7 +102,6 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 	str2 := vars.Get("str2")
 
 	// Render request
-	renderer := render.NewRenderer()
 	request := render.NewRequest(limit, int1, int2, str1, str2)
 	response := renderer.Render(request)
 	if err := response.Error; err != nil {
@@ -117,7 +120,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handles rendering statistics
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	statistics := render.NewStatistics()
+	statistics := renderer.Statistics
 	topStatistic := statistics.TopStatistic()
 	apiResponse := apiResponse{false, topStatistic}
 	json.NewEncoder(w).Encode(apiResponse)

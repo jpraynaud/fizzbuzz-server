@@ -125,28 +125,20 @@ var statistics Statistics
 
 // NewStatistics is the Statistics factory
 func NewStatistics() *Statistics {
-	if statistics.mutex == nil {
-		statistics.Totals = make(map[Request]int)
-		statistics.mutex = &sync.RWMutex{}
+	return &Statistics{
+		Totals: make(map[Request]int),
+		mutex:  &sync.RWMutex{},
 	}
-	return &statistics
-}
-
-// Reset resets rendering statistics
-func (s *Statistics) Reset() {
-	s.mutex.Lock()
-	s.Totals = make(map[Request]int)
-	s.mutex.Unlock()
 }
 
 // Record records rendering statistics
 func (s *Statistics) Record(request *Request) {
 	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.Totals[*request]++
 	if s.Totals[*request] > s.Totals[s.TopRequest] {
 		s.TopRequest = *request
 	}
-	s.mutex.Unlock()
 }
 
 // Statistic returns rendering statistics of a request

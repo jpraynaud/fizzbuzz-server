@@ -122,7 +122,6 @@ func TestStatistics(t *testing.T) {
 	}
 	// Get & reset statistics
 	statistics := NewStatistics()
-	statistics.Reset()
 	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
