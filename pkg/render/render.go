@@ -34,11 +34,11 @@ func (r *Request) Validate() error {
 	var err error = nil
 	switch {
 	case r.Limit < 1:
-		err = fmt.Errorf("limit must be >= 1, value %d was given", r.Limit)
+		err = fmt.Errorf("limit parameter must be >= 1, value %d was given", r.Limit)
 	case r.Int1 < 1:
-		err = fmt.Errorf("int1 must be >= 1, value %d was given", r.Int1)
+		err = fmt.Errorf("int1 parameter must be >= 1, value %d was given", r.Int1)
 	case r.Int2 < 1:
-		err = fmt.Errorf("int2 must be >= 1, value %d was given", r.Int2)
+		err = fmt.Errorf("int2 parameter must be >= 1, value %d was given", r.Int2)
 	}
 	return err
 }

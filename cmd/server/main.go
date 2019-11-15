@@ -85,17 +85,17 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := r.URL.Query()
 	limit, err := strconv.Atoi(vars.Get("limit"))
 	if err != nil {
-		apiError(w, r, http.StatusBadRequest, "limit parameter must be an integer\n")
+		apiError(w, r, http.StatusBadRequest, fmt.Sprintf("limit parameter must be an integer, value %s was given", vars.Get("limit")))
 		return
 	}
 	int1, err := strconv.Atoi(vars.Get("int1"))
 	if err != nil {
-		apiError(w, r, http.StatusBadRequest, "int1 parameter must be an integer\n")
+		apiError(w, r, http.StatusBadRequest, fmt.Sprintf("int1 parameter must be an integer, value %s was given", vars.Get("int1")))
 		return
 	}
 	int2, err := strconv.Atoi(vars.Get("int2"))
 	if err != nil {
-		apiError(w, r, http.StatusBadRequest, "int2 parameter must be an integer\n")
+		apiError(w, r, http.StatusBadRequest, fmt.Sprintf("int2 parameter must be an integer, value %s was given", vars.Get("int2")))
 		return
 	}
 	str1 := vars.Get("str1")
