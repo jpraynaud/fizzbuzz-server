@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,37 +17,27 @@ import (
 
 var renderer *render.Renderer
 
+func init() {
+	// Init FizzBuzz renderer
+	renderer = render.NewRenderer()
+}
+
+var (
+	environment string
+	addr        string
+)
+
 func main() {
 	// Parse flags
-	var (
-		environment string
-		addr        string
-	)
 	flag.StringVar(&addr, "address", "0.0.0.0:8080", "server listening address")
 	flag.StringVar(&environment, "environment", "development", "server environment (development or production)")
 	flag.Parse()
 
-	// Log setup
-	log.SetOutput(os.Stdout)
-	if environment == "production" {
-		log.SetFormatter(&log.JSONFormatter{})
-		log.SetLevel(log.InfoLevel)
-	} else {
-		log.SetLevel(log.DebugLevel)
-	}
-
-	// Init FizzBuzz renderer
-	renderer = render.NewRenderer()
+	// Logging setup
+	loggingSetup()
 
 	// Start HTTP server
-	log.WithFields(log.Fields{
-		"environment": environment,
-		"address":     addr,
-	}).Info("Start server")
-	router := mux.NewRouter()
-	router.HandleFunc("/render", renderHandler).Methods(http.MethodGet)
-	router.HandleFunc("/statistics", statisticsHandler).Methods(http.MethodGet)
-	router.Use(loggingMiddleware)
+	router := createRouter()
 	server := &http.Server{
 		Addr:         addr,
 		WriteTimeout: time.Second * 60,
@@ -55,6 +46,31 @@ func main() {
 		Handler:      router,
 	}
 	log.Fatal(server.ListenAndServe())
+}
+
+// createRouter creates the router of the HTTP server
+func createRouter() *mux.Router {
+	log.WithFields(log.Fields{
+		"environment": environment,
+		"address":     addr,
+	}).Info("Create server")
+	router := mux.NewRouter()
+	router.HandleFunc("/render", renderHandler).Methods(http.MethodGet)
+	router.HandleFunc("/statistics", statisticsHandler).Methods(http.MethodGet)
+	router.Use(loggingMiddleware)
+	return router
+}
+
+// loggingSetup sets up logging
+func loggingSetup() log.Level {
+	log.SetOutput(os.Stdout)
+	if environment == "production" {
+		log.SetFormatter(&log.JSONFormatter{})
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(log.DebugLevel)
+	}
+	return log.GetLevel()
 }
 
 // Logging middleware
