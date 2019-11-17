@@ -124,13 +124,13 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 		apiError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
-	lines := make([]string, 0)
-	for line := range response.Lines {
-		lines = append(lines, line)
+	items := make([]string, 0)
+	for item := range response.Items {
+		items = append(items, item)
 	}
 
 	// Write response
-	apiResponse := apiResponse{false, strings.Join(lines, ",")}
+	apiResponse := apiResponse{false, strings.Join(items, ",")}
 	json.NewEncoder(w).Encode(apiResponse)
 }
 

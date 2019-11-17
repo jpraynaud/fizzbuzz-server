@@ -83,8 +83,8 @@ func TestRenderer_Render(t *testing.T) {
 			// Render request and convert to slice
 			got := make([]string, 0)
 			response := renderer.Render(request)
-			for line := range response.Lines {
-				got = append(got, line)
+			for item := range response.Items {
+				got = append(got, item)
 			}
 			// Check that slice matches the one wanted
 			if (response.Error != nil) != tt.wantErr {
