@@ -12,9 +12,10 @@ It exposes 2 endpoints:
 * [Examples](#examples)
 * [Install](#install)
 * [Build](#build)
-* [Tests](#tests)
-* [Help](#help)
 * [Run](#run)
+* [Tests](#tests)
+* [Benchmarks](#benchmarks)
+* [Help](#help)
 * [Documentation](#documentation)
 
 ---
@@ -100,27 +101,6 @@ Build executable:
 go build -o fizzbuzz-server cmd/server/main.go
 ```
 
-## Tests
-
-Run unit tests:
-
-```sh
-# Test
-go test ./... -race -cover
-```
-
-## Help
-
-Get help:
-
-```sh
-# Help with executable
-./fizzbuzz-server --help
-
-# or
-go run cmd/server/main.go --help
-```
-
 ## Run
 
 The server accepts 2 configuration flags:
@@ -147,6 +127,22 @@ go run cmd/server/main.go  -address=0.0.0.0:8080 -environment=development
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=development go run cmd/server/main.go
 ```
 
+### Start server on 0.0.0.0:8080 in production:
+
+```sh
+# Start server 
+./fizzbuzz-server -address=0.0.0.0:8080 -environment=production
+
+# or 
+SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production ./fizzbuzz-server
+
+# or
+go run cmd/server/main.go  -address=0.0.0.0:8080 -environment=production
+
+# or
+SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production go run cmd/server/main.go
+```
+
 ### Then access endpoints:
 
 ```sh
@@ -160,6 +156,45 @@ curl 'http://0.0.0.0:8080/statistics'
 or:
 * Render a request at [http://0.0.0.0:8080/render?limit=20&int1=4&int2=7&str1=AA&str2=BBB].
 * Get statistics at [http://0.0.0.0:8080/statistics].
+
+## Tests
+
+Run unit tests:
+
+```sh
+# Test
+go test ./... -race -cover
+```
+
+## Benchmarks
+
+Run benchmarks:
+
+```sh
+# Benchmark
+go test ./... -run="^$" -bench=.
+```
+
+Or run server benchmark:
+```sh
+# Benchmark /render
+ab -n 10000 -c 25 "http://0.0.0.0:8080/render?limit=20&int1=4&int2=7&str1=AA&str2=BBB"
+
+# and /statistics
+ab -n 10000 -c 25 "http://0.0.0.0:8080/statistics"
+```
+
+## Help
+
+Get help:
+
+```sh
+# Help with executable
+./fizzbuzz-server --help
+
+# or
+go run cmd/server/main.go --help
+```
 
 ## Documentation
 

@@ -98,6 +98,20 @@ func TestRenderer_Render(t *testing.T) {
 	}
 }
 
+func BenchmarkRenderer_Render(b *testing.B) {
+	// Create renderer
+	renderer := NewRenderer()
+	// Create request
+	request := NewRequest(100, 3, 5, "fizz", "buzz")
+	// Reset timer
+	b.ResetTimer()
+	// Run benchmark
+	for i := 0; i < b.N; i++ {
+		// Create request
+		renderer.Render(request)
+	}
+}
+
 func TestStatistics(t *testing.T) {
 	// Prepare tests data
 	type fields struct {
@@ -143,5 +157,24 @@ func TestStatistics(t *testing.T) {
 				t.Errorf("Renderer.Render() = %v, want %v", got, topRequestWant)
 			}
 		})
+	}
+}
+
+func BenchmarkRenderer_TopStatistic(b *testing.B) {
+	// Create renderer
+	renderer := NewRenderer()
+	// Create request
+	request := NewRequest(100, 3, 5, "fizz", "buzz")
+	// record statistics
+	for i := 0; i < 1000; i++ {
+		// Create request
+		renderer.Render(request)
+	}
+	// Reset timer
+	b.ResetTimer()
+	// Run benchmark
+	for i := 0; i < b.N; i++ {
+		// Create request
+		renderer.TopStatistic()
 	}
 }
