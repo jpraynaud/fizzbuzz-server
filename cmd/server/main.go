@@ -29,8 +29,8 @@ var (
 
 func main() {
 	// Parse flags
-	flag.StringVar(&addr, "address", "0.0.0.0:8080", "server listening address")
-	flag.StringVar(&environment, "environment", "development", "server environment (development or production)")
+	flag.StringVar(&addr, "address", os.Getenv("SERVER_ADDR"), "server listening address. Equivalent to environment variable SERVER_ADDR")
+	flag.StringVar(&environment, "environment", os.Getenv("SERVER_ENV"), "server environment (development or production). Equivalent to environment variable SERVER_ENV")
 	flag.Parse()
 
 	// Logging setup
