@@ -163,6 +163,7 @@ func Test_createRouter(t *testing.T) {
 	}{
 		{"Render", args{"GET", "/render", http.StatusBadRequest}},
 		{"Statistics", args{"GET", "/statistics", http.StatusOK}},
+		{"Not Found", args{"GET", "/test123", http.StatusNotFound}},
 	}
 	// Prepare test server
 	router := createRouter()
