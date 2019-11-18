@@ -5,8 +5,8 @@
 This project implements a simple FizzBuzz REST server. 
 
 It exposes 2 endpoints:
-* **/render?limit=$limit&int1=$int1&int2=$int2&str1=$str1&str2=$str2** endpoint where **limit**, **int1** & **int2** are integer parameters and **str1** & **str2** are string parameters. When called, returns the FizzBuzz string associated with the parameters.
-* **/statistics** endpoint. When called, returns the most called request parameters from previous endpoint and the number of hits of this request.
+* **/render?limit=$limit&int1=$int1&int2=$int2&str1=$str1&str2=$str2** GET endpoint where **limit**, **int1** & **int2** are integer parameters and **str1** & **str2** are string parameters. When called, returns the FizzBuzz string associated with the parameters.
+* **/statistics** GET endpoint. When called, returns the most called request parameters from previous endpoint and the number of hits of this request.
 
 ---
 
@@ -21,6 +21,7 @@ It exposes 2 endpoints:
 * [Benchmarks](#benchmarks)
 * [Help](#help)
 * [Documentation](#documentation)
+* [SSL](#ssl)
 
 ---
 
@@ -121,8 +122,6 @@ or:
 * Render a request at [http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz].
 * Get statistics at [http://0.0.0.0:8080/statistics].
 
-
-
 ## Install
 
 With a [correctly configured](https://golang.org/doc/install#testing) Go toolchain (version 1.13+):
@@ -146,13 +145,20 @@ go build -v -o fizzbuzz-server cmd/server/main.go
 
 ## Run
 
-The server accepts 2 configuration flags:
+The server accepts these configuration flags:
 * **-address** is the address on which the server is listening (for example *0.0.0.0:8080*).
 * **-environment** is the environment of the server (*development* or *production*).
+* **-tlscert** is the path of the SSL certificate file.
+* **-tlskey** is the path of the SSL private key file.
 
-If these flags are not set, they will default to environment variables:
+
+If these flags are not set, they will respectively default to environment variables:
 * **SERVER_ADDR** 
 * **SERVER_ENV** 
+* **SERVER_TLSCERTFILE**
+* **SERVER_TLSKEYFILE**
+
+***If the certificate/private key files are not specified the server will start without TLS.***
 
 ### Start server on 0.0.0.0:8080 in development:
 
@@ -261,6 +267,45 @@ The project is split in 2 packages:
     * a **Renderer** that processes a **Request** and returns a **Response**, while recording **Statistics**.
     * a **Statistics** that stores statistics (a struct that holds a map of total hits for requests and the top request so far).
     * a **RequestStatistic** that gives the statistic of a request (a struct that holds the **Request** and the total hits).
+
+## SSL
+
+### Self signed SSL certificate generation:
+
+```sh
+# Generate Certificate and Private Key
+openssl genrsa -out server.key 2048
+openssl rsa -in server.key -out server.key
+openssl req -sha256 -new -key server.key -out server.csr -subj '/CN=localhost'
+openssl x509 -req -sha256 -days 365 -in server.csr -signkey server.key -out server.crt
+cat server.crt server.key > cert.pem
+```
+
+### Start SSL server on 0.0.0.0:8080 in production:
+
+```sh
+# Start server 
+./fizzbuzz-server -address=0.0.0.0:8080 -environment=production -tlscert=cert.pem -tlskey=server.key
+
+# or 
+SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production SERVER_TLSCERTFILE=cert.pem SERVER_TLSKEYFILE=server.key ./fizzbuzz-server
+
+# or
+go run cmd/server/main.go  -address=0.0.0.0:8080 -environment=production -tlscert=cert.pem -tlskey=server.key
+
+# or
+SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production SERVER_TLSCERTFILE=cert.pem SERVER_TLSKEYFILE=server.key go run cmd/server/main.go
+```
+
+### Then access endpoints:
+
+```sh
+# Renders FizzBuzz request
+curl --insecure 'https://localhost:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz'
+
+# Get Statistics
+curl --insecure 'https://localhost:8080/statistics'
+```
 
 
 

@@ -23,14 +23,15 @@ func init() {
 }
 
 var (
-	environment string
-	addr        string
+	environment, addr, tlsCertFile, tlsKeyFile string
 )
 
 func main() {
 	// Parse flags
 	flag.StringVar(&addr, "address", os.Getenv("SERVER_ADDR"), "server listening address. Equivalent to environment variable SERVER_ADDR")
 	flag.StringVar(&environment, "environment", os.Getenv("SERVER_ENV"), "server environment (development or production). Equivalent to environment variable SERVER_ENV")
+	flag.StringVar(&tlsCertFile, "tlscert", os.Getenv("SERVER_TLSCERTFILE"), "server TLS certificate file. Equivalent to environment variable SERVER_TLSCERTFILE")
+	flag.StringVar(&tlsKeyFile, "tlskey", os.Getenv("SERVER_TLSKEYFILE"), "server TLS key file. Equivalent to environment variable SERVER_TLSKEYFILE")
 	flag.Parse()
 
 	// Logging setup
@@ -45,7 +46,12 @@ func main() {
 		IdleTimeout:  time.Second * 60,
 		Handler:      router,
 	}
-	log.Fatal(server.ListenAndServe())
+	if tlsCertFile != "" && tlsKeyFile != "" {
+		log.Fatal(server.ListenAndServeTLS(tlsCertFile, tlsKeyFile))
+	} else {
+		log.Fatal(server.ListenAndServe())
+	}
+
 }
 
 // createRouter creates the router of the HTTP server
@@ -53,6 +59,7 @@ func createRouter() *mux.Router {
 	log.WithFields(log.Fields{
 		"environment": environment,
 		"address":     addr,
+		"TLS":         (tlsCertFile != "" && tlsKeyFile != ""),
 	}).Info("Create server")
 	router := mux.NewRouter()
 	router.HandleFunc("/render", renderHandler).Methods(http.MethodGet)
