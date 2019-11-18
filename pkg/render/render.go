@@ -31,7 +31,7 @@ func NewRequest(limit, int1, int2 int, str1, str2 string) *Request {
 // Validate checks that the request is valid and can be rendered by the FizzBuzz algorithm (see README for details)
 // i.e. Limit/Int1/Int2 must be >= 1
 func (r *Request) Validate() error {
-	var err error = nil
+	var err error
 	switch {
 	case r.Limit < 1:
 		err = fmt.Errorf("limit parameter must be >= 1, value %d was given", r.Limit)
