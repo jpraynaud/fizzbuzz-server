@@ -1,5 +1,6 @@
 # FizzBuzz Server
 [![Go Report Card](https://goreportcard.com/badge/github.com/jpraynaud/fizzbuzz-server)](https://goreportcard.com/report/github.com/jpraynaud/fizzbuzz-server)
+[![GoDoc](https://godoc.org/github.com/jpraynaud/fizzbuzz-server/pkg/render?status.svg)](https://godoc.org/github.com/jpraynaud/fizzbuzz-server/pkg/render)
 
 This project implements a simple FizzBuzz REST server. 
 
@@ -240,6 +241,8 @@ go run cmd/server/main.go --help
 ```
 
 ## Documentation
+
+[![GoDoc](https://godoc.org/github.com/jpraynaud/fizzbuzz-server/pkg/render?status.svg)](https://godoc.org/github.com/jpraynaud/fizzbuzz-server/pkg/render)
 
 ### Generation of the package documentation:
 Generate documentation from source code and access it from [http://0.0.0.0:6060/pkg/github.com/jpraynaud/fizzbuzz-server/].
