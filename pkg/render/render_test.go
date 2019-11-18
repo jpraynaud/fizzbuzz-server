@@ -2,7 +2,9 @@
 package render
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -107,9 +109,25 @@ func BenchmarkRenderer_Render(b *testing.B) {
 	b.ResetTimer()
 	// Run benchmark
 	for i := 0; i < b.N; i++ {
-		// Create request
+		// Render request
 		renderer.Render(request)
 	}
+}
+
+func ExampleRenderer_Render() {
+	// Create renderer
+	renderer := NewRenderer()
+	// Create request
+	request := NewRequest(20, 3, 5, "fizz", "buzz")
+	// Render request
+	response := renderer.Render(request)
+	// Generate output
+	items := make([]string, 0)
+	for item := range response.Items {
+		items = append(items, item)
+	}
+	fmt.Print(strings.Join(items, ","))
+	// Output: 1,2,fizz,4,buzz,fizz,7,8,fizz,buzz,11,fizz,13,14,fizzbuzz,16,17,fizz,19,buzz
 }
 
 func TestStatistics(t *testing.T) {
