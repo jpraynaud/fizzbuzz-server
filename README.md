@@ -1,4 +1,6 @@
 # FizzBuzz Server
+[![Go Report Card](https://goreportcard.com/badge/github.com/jpraynaud/fizzbuzz-server)](https://goreportcard.com/report/github.com/jpraynaud/fizzbuzz-server)
+
 This project implements a simple FizzBuzz REST server. 
 
 It exposes 2 endpoints:
@@ -10,6 +12,7 @@ It exposes 2 endpoints:
 * [Algorithm](#algorithm)
 * [Response](#response)
 * [Examples](#examples)
+* [Docker](#docker)
 * [Install](#install)
 * [Build](#build)
 * [Run](#run)
@@ -80,13 +83,52 @@ The response is sent in JSON format with 2 fields:
 }
 ```
 
+## Docker
+
+### Build and run Docker container:
+
+```sh
+# Git clone
+git clone https://github.com/jpraynaud/fizzbuzz-server
+
+# Build Docker container
+docker build -t jpraynaud/fizzbuzz-server fizzbuzz-server
+
+# Run Docker container in production
+docker run --rm -p 8080:8080 -e SERVER_ADDR='0.0.0.0:8080' -e SERVER_ENV='production' --name='fizzbuzz' -d jpraynaud/fizzbuzz-server
+
+# Show Docker container logs
+docker logs -f fizzbuzz
+
+# Kill Docker container
+docker kill fizzbuzz
+
+```
+
+### Then access endpoints:
+
+```sh
+# Renders FizzBuzz request
+curl 'http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz'
+
+# Get Statistics
+curl 'http://0.0.0.0:8080/statistics'
+```
+
+or:
+
+* Render a request at [http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz].
+* Get statistics at [http://0.0.0.0:8080/statistics].
+
+
+
 ## Install
 
 With a [correctly configured](https://golang.org/doc/install#testing) Go toolchain (version 1.13+):
 
 ```sh
 #Download sources
-go get -u github.com/jpraynaud/fizzbuzz-server
+go get -d -t -v github.com/jpraynaud/fizzbuzz-server/cmd/server
 
 # Go to sources directory
 cd $GOPATH/src/github.com/jpraynaud/fizzbuzz-server
@@ -98,7 +140,7 @@ Build executable:
 
 ```sh
 # Build
-go build -o fizzbuzz-server cmd/server/main.go
+go build -v -o fizzbuzz-server cmd/server/main.go
 ```
 
 ## Run
@@ -147,14 +189,15 @@ SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production go run cmd/server/main.go
 
 ```sh
 # Renders FizzBuzz request
-curl 'http://0.0.0.0:8080/render?limit=20&int1=4&int2=7&str1=AA&str2=BBB'
+curl 'http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz'
 
 # Get Statistics
 curl 'http://0.0.0.0:8080/statistics'
 ```
 
 or:
-* Render a request at [http://0.0.0.0:8080/render?limit=20&int1=4&int2=7&str1=AA&str2=BBB].
+
+* Render a request at [http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz].
 * Get statistics at [http://0.0.0.0:8080/statistics].
 
 ## Tests
@@ -162,8 +205,8 @@ or:
 Run unit tests:
 
 ```sh
-# Test
-go test ./... -race -cover
+# Test with race detection and code coverage
+go test -race -cover -v ./...
 ```
 
 ## Benchmarks
@@ -172,7 +215,7 @@ Run benchmarks:
 
 ```sh
 # Benchmark
-go test ./... -run="^$" -bench=.
+go test -run="^$" -bench=. ./...
 ```
 
 Or run server benchmark:
@@ -199,7 +242,7 @@ go run cmd/server/main.go --help
 ## Documentation
 
 ### Generation of the package documentation:
-Generate documentation from source code and access it from [http://0.0.0.0:6060/pkg/github.com/jpraynaud/fizzbuzz-server/pkg/render/].
+Generate documentation from source code and access it from [http://0.0.0.0:6060/pkg/github.com/jpraynaud/fizzbuzz-server/].
 
 ```sh
 # Generate documentation
@@ -215,5 +258,8 @@ The project is split in 2 packages:
     * a **Renderer** that processes a **Request** and returns a **Response**, while recording **Statistics**.
     * a **Statistics** that stores statistics (a struct that holds a map of total hits for requests and the top request so far).
     * a **RequestStatistic** that gives the statistic of a request (a struct that holds the **Request** and the total hits).
+
+
+
 
 
