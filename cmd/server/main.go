@@ -125,8 +125,18 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	items := make([]string, 0)
-	for item := range response.Items {
-		items = append(items, item)
+render:
+	for {
+		select {
+		case item, more := <-response.Items:
+			if !more {
+				break render
+			}
+			items = append(items, item)
+		case <-r.Context().Done():
+			close(response.Cancel)
+			return
+		}
 	}
 
 	// Write response

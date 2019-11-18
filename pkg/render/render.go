@@ -4,6 +4,8 @@ package render
 import (
 	"fmt"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Request represents a request that will be rendered according to the FizzBuzz algorithm (see README for details)
@@ -45,15 +47,17 @@ func (r *Request) Validate() error {
 
 // Response represents a response that will be returned when a request is rendered
 type Response struct {
-	Items chan string
-	Error error
+	Items  chan string
+	Error  error
+	Cancel chan struct{}
 }
 
 // NewResponse is the Response factory
 func NewResponse() *Response {
 	return &Response{
-		Items: make(chan string),
-		Error: nil,
+		Items:  make(chan string),
+		Error:  nil,
+		Cancel: make(chan struct{}),
 	}
 }
 
@@ -73,13 +77,16 @@ func NewRenderer() *Renderer {
 func (rr *Renderer) Render(request *Request) *Response {
 	response := NewResponse()
 	if err := request.Validate(); err != nil {
-
 		defer close(response.Items)
 		response.Error = err
 		return response
 	}
+	log.Debugf("Request rendering started %+v", request)
 	go func() {
-		defer close(response.Items)
+		defer func() {
+			log.Debugf("Request rendering done %+v", request)
+			close(response.Items)
+		}()
 		for i := 1; i <= request.Limit; i++ {
 			multiple := false
 			item := ""
@@ -94,7 +101,12 @@ func (rr *Renderer) Render(request *Request) *Response {
 			if !multiple {
 				item = fmt.Sprintf("%d", i)
 			}
-			response.Items <- item
+			select {
+			case response.Items <- item:
+			case <-response.Cancel:
+				log.Debugf("Request rendering cancelled %+v", request)
+				return
+			}
 		}
 	}()
 	rr.Statistics.Record(request)
