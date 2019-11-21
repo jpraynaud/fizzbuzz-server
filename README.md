@@ -113,7 +113,7 @@ docker kill fizzbuzz
 # Renders FizzBuzz request
 curl 'http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz'
 
-# Get Statistics
+# Get statistics
 curl 'http://0.0.0.0:8080/statistics'
 ```
 
@@ -170,7 +170,7 @@ If these flags are not set, they will respectively default to environment variab
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=development ./fizzbuzz-server
 
 # or
-go run cmd/server/main.go  -address=0.0.0.0:8080 -environment=development
+go run cmd/server/main.go -address=0.0.0.0:8080 -environment=development
 
 # or
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=development go run cmd/server/main.go
@@ -186,7 +186,7 @@ SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=development go run cmd/server/main.go
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production ./fizzbuzz-server
 
 # or
-go run cmd/server/main.go  -address=0.0.0.0:8080 -environment=production
+go run cmd/server/main.go -address=0.0.0.0:8080 -environment=production
 
 # or
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production go run cmd/server/main.go
@@ -198,7 +198,7 @@ SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production go run cmd/server/main.go
 # Renders FizzBuzz request
 curl 'http://0.0.0.0:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz'
 
-# Get Statistics
+# Get statistics
 curl 'http://0.0.0.0:8080/statistics'
 ```
 
@@ -228,10 +228,10 @@ go test -run="^$" -bench=. ./...
 Or run server benchmark:
 ```sh
 # Benchmark /render
-ab -n 10000 -c 25 "http://0.0.0.0:8080/render?limit=20&int1=4&int2=7&str1=AA&str2=BBB"
+ab -n 100000 -c 100 -k "http://0.0.0.0:8080/render?limit=100&int1=4&int2=7&str1=AA&str2=BBB"
 
 # and /statistics
-ab -n 10000 -c 25 "http://0.0.0.0:8080/statistics"
+ab -n 100000 -c 100 -k "http://0.0.0.0:8080/statistics"
 ```
 
 ## Help
@@ -258,7 +258,7 @@ Generate documentation from source code and access it from [http://0.0.0.0:6060/
 godoc
 ```
 
-### Structure explaination:
+### Structure explanation:
 The project is split in 2 packages:
 * **main** package that creates the HTTP server and the router/handlers that serve the endpoints.
 * **render** package with:
@@ -291,7 +291,7 @@ cat server.crt server.key > cert.pem
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production SERVER_TLSCERTFILE=cert.pem SERVER_TLSKEYFILE=server.key ./fizzbuzz-server
 
 # or
-go run cmd/server/main.go  -address=0.0.0.0:8080 -environment=production -tlscert=cert.pem -tlskey=server.key
+go run cmd/server/main.go -address=0.0.0.0:8080 -environment=production -tlscert=cert.pem -tlskey=server.key
 
 # or
 SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production SERVER_TLSCERTFILE=cert.pem SERVER_TLSKEYFILE=server.key go run cmd/server/main.go
@@ -303,7 +303,7 @@ SERVER_ADDR=0.0.0.0:8080 SERVER_ENV=production SERVER_TLSCERTFILE=cert.pem SERVE
 # Renders FizzBuzz request
 curl --insecure 'https://localhost:8080/render?limit=100&int1=3&int2=5&str1=fizz&str2=buzz'
 
-# Get Statistics
+# Get statistics
 curl --insecure 'https://localhost:8080/statistics'
 ```
 
