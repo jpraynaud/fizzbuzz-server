@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -75,6 +76,7 @@ func NewRenderer() *Renderer {
 
 // Render renders the response associated with the request according to the FizzBuzz algorithm (see README for details)
 func (rr *Renderer) Render(request *Request) *Response {
+	defer rr.Statistics.Record(request)
 	response := NewResponse()
 	if err := request.Validate(); err != nil {
 		defer close(response.Items)
@@ -99,7 +101,7 @@ func (rr *Renderer) Render(request *Request) *Response {
 				item += request.Str2
 			}
 			if !multiple {
-				item = fmt.Sprintf("%d", i)
+				item = strconv.Itoa(i)
 			}
 			select {
 			case response.Items <- item:
@@ -109,7 +111,6 @@ func (rr *Renderer) Render(request *Request) *Response {
 			}
 		}
 	}()
-	rr.Statistics.Record(request)
 	return response
 }
 
