@@ -168,10 +168,10 @@ func (s *Statistics) Statistic(request *Request) *RequestStatistic {
 // TopStatistic returns rendering statistics of the top request
 func (s *Statistics) TopStatistic() *RequestStatistic {
 	s.mutex.RLock()
-	defer s.mutex.RUnlock()
 	topRequest := s.TopRequest
 	if s.Totals[topRequest] == 0 {
 		return nil
 	}
+	s.mutex.RUnlock()
 	return s.Statistic(&topRequest)
 }
