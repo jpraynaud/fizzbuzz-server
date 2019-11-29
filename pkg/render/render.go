@@ -90,17 +90,15 @@ func (rr *Renderer) Render(request *Request) *Response {
 			close(response.Items)
 		}()
 		for i := 1; i <= request.Limit; i++ {
-			multiple := false
-			item := ""
-			if i%request.Int1 == 0 {
-				multiple = true
-				item += request.Str1
-			}
-			if i%request.Int2 == 0 {
-				multiple = true
-				item += request.Str2
-			}
-			if !multiple {
+			var item string
+			switch {
+			case i%request.Int1 == 0 && i%request.Int2 == 0:
+				item = request.Str1 + request.Str2
+			case i%request.Int1 == 0:
+				item = request.Str1
+			case i%request.Int2 == 0:
+				item = request.Str2
+			default:
 				item = strconv.Itoa(i)
 			}
 			select {
