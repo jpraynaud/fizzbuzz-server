@@ -128,9 +128,8 @@ func NewRequestStatistic(request *Request, total int) *RequestStatistic {
 
 // Statistics represents statistics of requests rendering
 type Statistics struct {
-	Totals     map[Request]int
+	Totals     sync.Map
 	TopRequest Request
-	mutex      *sync.RWMutex
 }
 
 var statistics Statistics
@@ -138,38 +137,34 @@ var statistics Statistics
 // NewStatistics is the Statistics factory
 func NewStatistics() *Statistics {
 	return &Statistics{
-		Totals: make(map[Request]int),
-		mutex:  &sync.RWMutex{},
+		Totals: sync.Map{},
 	}
 }
 
 // Record records rendering statistics
 func (s *Statistics) Record(request *Request) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.Totals[*request]++
-	if s.Totals[*request] > s.Totals[s.TopRequest] {
+	total, _ := s.Totals.Load(*request)
+	totalI, _ := total.(int)
+	totalI++
+	totalTop, _ := s.Totals.Load(s.TopRequest)
+	totalTopI, _ := totalTop.(int)
+	s.Totals.Store(*request, totalI)
+	if totalI > totalTopI {
 		s.TopRequest = *request
 	}
 }
 
 // Statistic returns rendering statistics of a request
 func (s *Statistics) Statistic(request *Request) *RequestStatistic {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
-	if s.Totals[*request] == 0 {
+	total, _ := s.Totals.Load(*request)
+	if total.(int) == 0 {
 		return nil
 	}
-	return NewRequestStatistic(request, s.Totals[*request])
+	return NewRequestStatistic(request, total.(int))
 }
 
 // TopStatistic returns rendering statistics of the top request
 func (s *Statistics) TopStatistic() *RequestStatistic {
-	s.mutex.RLock()
 	topRequest := s.TopRequest
-	if s.Totals[topRequest] == 0 {
-		return nil
-	}
-	s.mutex.RUnlock()
 	return s.Statistic(&topRequest)
 }
