@@ -62,21 +62,27 @@ func NewResponse() *Response {
 	}
 }
 
-// Renderer represents a renderer for the FizzBuzz Algorithm (see README for details)
-type Renderer struct {
+// Renderer represents the interface to render the FizzBuzz Algorithm (see README for details)
+type Renderer interface {
+	Render(request *Request) *Response
+	StatisticRecorder
+}
+
+// Default renderer implementation
+type renderer struct {
 	*Statistics
 }
 
 // NewRenderer is the Renderer factory
-func NewRenderer() *Renderer {
-	return &Renderer{
+func NewRenderer() Renderer {
+	return &renderer{
 		Statistics: NewStatistics(),
 	}
 }
 
 // Render renders the response associated with the request according to the FizzBuzz algorithm (see README for details)
-func (rr *Renderer) Render(request *Request) *Response {
-	defer rr.Statistics.Record(request)
+func (rr *renderer) Render(request *Request) *Response {
+	defer rr.RecordStatistic(request)
 	response := NewResponse()
 	if err := request.Validate(); err != nil {
 		defer close(response.Items)
@@ -126,13 +132,19 @@ func NewRequestStatistic(request *Request, total int) *RequestStatistic {
 	}
 }
 
+// StatisticRecorder represents the interface for statistics recording of requests rendering
+type StatisticRecorder interface {
+	RecordStatistic(request *Request)
+	GetStatistic(request *Request) *RequestStatistic
+	GetTopStatistic() *RequestStatistic
+	ResetStatistics()
+}
+
 // Statistics represents statistics of requests rendering
 type Statistics struct {
 	Totals     sync.Map
 	TopRequest Request
 }
-
-var statistics Statistics
 
 // NewStatistics is the Statistics factory
 func NewStatistics() *Statistics {
@@ -141,8 +153,8 @@ func NewStatistics() *Statistics {
 	}
 }
 
-// Record records rendering statistics
-func (s *Statistics) Record(request *Request) {
+// RecordStatistic records rendering statistics
+func (s *Statistics) RecordStatistic(request *Request) {
 	total, _ := s.Totals.Load(*request)
 	totalI, _ := total.(int)
 	totalI++
@@ -154,8 +166,8 @@ func (s *Statistics) Record(request *Request) {
 	}
 }
 
-// Statistic returns rendering statistics of a request
-func (s *Statistics) Statistic(request *Request) *RequestStatistic {
+// GetStatistic returns rendering statistics of a request
+func (s *Statistics) GetStatistic(request *Request) *RequestStatistic {
 	total, _ := s.Totals.Load(*request)
 	if total.(int) == 0 {
 		return nil
@@ -163,8 +175,21 @@ func (s *Statistics) Statistic(request *Request) *RequestStatistic {
 	return NewRequestStatistic(request, total.(int))
 }
 
-// TopStatistic returns rendering statistics of the top request
-func (s *Statistics) TopStatistic() *RequestStatistic {
+// GetTopStatistic returns rendering statistics of the top request
+func (s *Statistics) GetTopStatistic() *RequestStatistic {
 	topRequest := s.TopRequest
-	return s.Statistic(&topRequest)
+	return s.GetStatistic(&topRequest)
+}
+
+// ResetStatistics resets all statistics currently recorded
+func (s *Statistics) ResetStatistics() {
+	s.Totals = sync.Map{}
+	s.TopRequest = Request{}
+}
+
+func (s *Statistics) debug() {
+	s.Totals.Range(func(k, v interface{}) bool {
+		fmt.Println(k, "=>", v)
+		return true
+	})
 }

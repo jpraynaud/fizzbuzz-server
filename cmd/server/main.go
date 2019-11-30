@@ -15,16 +15,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var renderer *render.Renderer
+var (
+	environment, addr, tlsCertFile, tlsKeyFile string
+	renderer                                   render.Renderer
+)
 
 func init() {
 	// Init FizzBuzz renderer
 	renderer = render.NewRenderer()
 }
-
-var (
-	environment, addr, tlsCertFile, tlsKeyFile string
-)
 
 func main() {
 	// Parse flags
@@ -153,8 +152,7 @@ render:
 
 // Handles rendering statistics
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	statistics := renderer.Statistics
-	topStatistic := statistics.TopStatistic()
+	topStatistic := renderer.GetTopStatistic()
 	apiResponse := apiResponse{false, topStatistic}
 	json.NewEncoder(w).Encode(apiResponse)
 }

@@ -62,7 +62,7 @@ func Test_renderHandler(t *testing.T) {
 		{"Render OK", args{renderHandler, "GET", "/render", "limit=30&int1=3&int2=5&str1=喂&str2=世界", http.StatusOK, apiResponse{false, "1,2,喂,4,世界,喂,7,8,喂,世界,11,喂,13,14,喂世界,16,17,喂,19,世界,喂,22,23,喂,世界,26,喂,28,29,喂世界"}}},
 	}
 	// Reset statistics
-	renderer.Statistics = render.NewStatistics()
+	renderer.ResetStatistics()
 	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,7 +107,7 @@ func Test_statisticsHandler(t *testing.T) {
 		{"Statistics OK", args{statisticsHandler, "GET", "/statistics", "", http.StatusOK, apiResponse{false, render.RequestStatistic{Request: render.Request{Limit: 20, Int1: 3, Int2: 5, Str1: "AA", Str2: "BBB"}, Total: 3}}}},
 	}
 	// Reset statistics
-	renderer.Statistics = render.NewStatistics()
+	renderer.ResetStatistics()
 	// Run tests
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -264,7 +264,8 @@ The project is split in 2 packages:
 * **render** package with:
     * a **Request** that represents a FizzBuzz request (a struct that holds request parameters explained in [Algorithm](#algorithm)).
     * a **Response** that represents a response rendered from a **Request** (a struct that holds a channel of strings and an error).
-    * a **Renderer** that processes a **Request** and returns a **Response**, while recording **Statistics**.
+    * a **StatisticRecorder** that records **Request** rendering **Statistics**.
+    * a **Renderer** that processes (**Render**) a **Request** and returns a **Response**, while recording **Statistics**.
     * a **Statistics** that stores statistics (a struct that holds a map of total hits for requests and the top request so far).
     * a **RequestStatistic** that gives the statistic of a request (a struct that holds the **Request** and the total hits).
 

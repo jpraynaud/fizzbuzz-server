@@ -161,16 +161,16 @@ func TestStatistics(t *testing.T) {
 			request := NewRequest(tt.fieldsTodo.Limit, tt.fieldsTodo.Int1, tt.fieldsTodo.Int2, tt.fieldsTodo.Str1, tt.fieldsTodo.Str2)
 			// Records request multiple times
 			for i := 0; i < tt.iterationsTodo; i++ {
-				statistics.Record(request)
+				statistics.RecordStatistic(request)
 			}
 			// Check that total renderings recorded matches the total wanted
-			requestStatistic := statistics.Statistic(request)
+			requestStatistic := statistics.GetStatistic(request)
 			if got := requestStatistic.Total; got != tt.iterationsWant {
-				t.Errorf("Statistics.Record() = %v, want %v", got, tt.iterationsWant)
+				t.Errorf("StatisticRecorder.RecordStatistic() = %v, want %v", got, tt.iterationsWant)
 			}
 			// Check that the most used request matches the most used request wanted
 			topRequestWant := NewRequest(tt.fieldsMostUsedWant.Limit, tt.fieldsMostUsedWant.Int1, tt.fieldsMostUsedWant.Int2, tt.fieldsMostUsedWant.Str1, tt.fieldsMostUsedWant.Str2)
-			topRequestStatistic := statistics.TopStatistic()
+			topRequestStatistic := statistics.GetTopStatistic()
 			if got := topRequestStatistic.Request; !reflect.DeepEqual(got, *topRequestWant) {
 				t.Errorf("Renderer.Render() = %v, want %v", got, topRequestWant)
 			}
@@ -178,7 +178,7 @@ func TestStatistics(t *testing.T) {
 	}
 }
 
-func BenchmarkRenderer_TopStatistic(b *testing.B) {
+func BenchmarkRenderer_GetTopStatistic(b *testing.B) {
 	// Create renderer
 	renderer := NewRenderer()
 	// Create request
@@ -193,6 +193,6 @@ func BenchmarkRenderer_TopStatistic(b *testing.B) {
 	// Run benchmark
 	for i := 0; i < b.N; i++ {
 		// Create request
-		renderer.TopStatistic()
+		renderer.GetTopStatistic()
 	}
 }
