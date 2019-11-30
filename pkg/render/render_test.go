@@ -2,6 +2,7 @@
 package render
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -84,7 +85,7 @@ func TestRenderer_Render(t *testing.T) {
 			request := NewRequest(tt.fields.Limit, tt.fields.Int1, tt.fields.Int2, tt.fields.Str1, tt.fields.Str2)
 			// Render request and convert to slice
 			got := make([]string, 0)
-			response := renderer.Render(request)
+			response := renderer.Render(context.TODO(), request)
 			for item := range response.Items {
 				got = append(got, item)
 			}
@@ -110,7 +111,7 @@ func BenchmarkRenderer_Render(b *testing.B) {
 	// Run benchmark
 	for i := 0; i < b.N; i++ {
 		// Render request
-		renderer.Render(request)
+		renderer.Render(context.TODO(), request)
 	}
 }
 
@@ -120,7 +121,7 @@ func ExampleRenderer_Render() {
 	// Create request
 	request := NewRequest(20, 3, 5, "fizz", "buzz")
 	// Render request
-	response := renderer.Render(request)
+	response := renderer.Render(context.TODO(), request)
 	// Generate output
 	items := make([]string, 0)
 	for item := range response.Items {
@@ -186,7 +187,7 @@ func BenchmarkRenderer_GetTopStatistic(b *testing.B) {
 	// record statistics
 	for i := 0; i < 1000; i++ {
 		// Create request
-		renderer.Render(request)
+		renderer.Render(context.TODO(), request)
 	}
 	// Reset timer
 	b.ResetTimer()

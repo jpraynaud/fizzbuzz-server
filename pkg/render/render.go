@@ -2,6 +2,7 @@
 package render
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"sync"
@@ -48,23 +49,21 @@ func (r *Request) Validate() error {
 
 // Response represents a response that will be returned when a request is rendered
 type Response struct {
-	Items  chan string
-	Error  error
-	Cancel chan struct{}
+	Items chan string
+	Error error
 }
 
 // NewResponse is the Response factory
 func NewResponse() *Response {
 	return &Response{
-		Items:  make(chan string),
-		Error:  nil,
-		Cancel: make(chan struct{}),
+		Items: make(chan string),
+		Error: nil,
 	}
 }
 
 // Renderer represents the interface to render the FizzBuzz Algorithm (see README for details)
 type Renderer interface {
-	Render(request *Request) *Response
+	Render(ctx context.Context, request *Request) *Response
 	StatisticRecorder
 }
 
@@ -81,7 +80,7 @@ func NewRenderer() Renderer {
 }
 
 // Render renders the response associated with the request according to the FizzBuzz algorithm (see README for details)
-func (rr *renderer) Render(request *Request) *Response {
+func (rr *renderer) Render(ctx context.Context, request *Request) *Response {
 	defer rr.RecordStatistic(request)
 	response := NewResponse()
 	if err := request.Validate(); err != nil {
@@ -109,7 +108,7 @@ func (rr *renderer) Render(request *Request) *Response {
 			}
 			select {
 			case response.Items <- item:
-			case <-response.Cancel:
+			case <-ctx.Done():
 				log.Debugf("Request rendering cancelled %+v", request)
 				return
 			}

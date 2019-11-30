@@ -125,24 +125,14 @@ func renderHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Render request
 	request := render.NewRequest(limit, int1, int2, str1, str2)
-	response := renderer.Render(request)
+	response := renderer.Render(r.Context(), request)
 	if err := response.Error; err != nil {
 		apiError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 	items := make([]string, 0)
-render:
-	for {
-		select {
-		case item, more := <-response.Items:
-			if !more {
-				break render
-			}
-			items = append(items, item)
-		case <-r.Context().Done():
-			close(response.Cancel)
-			return
-		}
+	for item := range response.Items {
+		items = append(items, item)
 	}
 
 	// Write response
