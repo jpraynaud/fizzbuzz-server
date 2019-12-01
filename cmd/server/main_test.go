@@ -36,6 +36,8 @@ func validateHandler(t *testing.T, handler http.HandlerFunc, request *http.Reque
 }
 
 func Test_renderHandler(t *testing.T) {
+	// Create new renderer
+	renderer := render.NewRenderer()
 	// Prepare tests data
 	type args struct {
 		handler           http.HandlerFunc
@@ -49,17 +51,17 @@ func Test_renderHandler(t *testing.T) {
 		name string
 		args args
 	}{
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "", http.StatusBadRequest, apiResponse{true, "limit parameter must be an integer, value  was given"}}},
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "limit=Z&int1=Z&int2=Z&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "limit parameter must be an integer, value Z was given"}}},
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "limit=20&int1=Z&int2=Z&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int1 parameter must be an integer, value Z was given"}}},
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=Z&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int2 parameter must be an integer, value Z was given"}}},
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "limit=0&int1=3&int2=5&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "limit parameter must be >= 1, value 0 was given"}}},
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "limit=20&int1=0&int2=5&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int1 parameter must be >= 1, value 0 was given"}}},
-		{"Render Bad Request", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=0&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int2 parameter must be >= 1, value 0 was given"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=A&str2=B", http.StatusOK, apiResponse{false, "1,2,A,4,B,A,7,8,A,B,11,A,13,14,AB,16,17,A,19,B"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=30&int1=2&int2=7&str1=AAA&str2=BBB", http.StatusOK, apiResponse{false, "1,AAA,3,AAA,5,AAA,BBB,AAA,9,AAA,11,AAA,13,AAABBB,15,AAA,17,AAA,19,AAA,BBB,AAA,23,AAA,25,AAA,27,AAABBB,29,AAA"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=30&int1=3&int2=5&str1=喂&str2=世界", http.StatusOK, apiResponse{false, "1,2,喂,4,世界,喂,7,8,喂,世界,11,喂,13,14,喂世界,16,17,喂,19,世界,喂,22,23,喂,世界,26,喂,28,29,喂世界"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "", http.StatusBadRequest, apiResponse{true, "limit parameter must be an integer, value  was given"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "limit=Z&int1=Z&int2=Z&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "limit parameter must be an integer, value Z was given"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=Z&int2=Z&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int1 parameter must be an integer, value Z was given"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=Z&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int2 parameter must be an integer, value Z was given"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "limit=0&int1=3&int2=5&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "limit parameter must be >= 1, value 0 was given"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=0&int2=5&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int1 parameter must be >= 1, value 0 was given"}}},
+		{"Render Bad Request", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=0&str1=A&str2=B", http.StatusBadRequest, apiResponse{true, "int2 parameter must be >= 1, value 0 was given"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=A&str2=B", http.StatusOK, apiResponse{false, "1,2,A,4,B,A,7,8,A,B,11,A,13,14,AB,16,17,A,19,B"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=30&int1=2&int2=7&str1=AAA&str2=BBB", http.StatusOK, apiResponse{false, "1,AAA,3,AAA,5,AAA,BBB,AAA,9,AAA,11,AAA,13,AAABBB,15,AAA,17,AAA,19,AAA,BBB,AAA,23,AAA,25,AAA,27,AAABBB,29,AAA"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=30&int1=3&int2=5&str1=喂&str2=世界", http.StatusOK, apiResponse{false, "1,2,喂,4,世界,喂,7,8,喂,世界,11,喂,13,14,喂世界,16,17,喂,19,世界,喂,22,23,喂,世界,26,喂,28,29,喂世界"}}},
 	}
 	// Reset statistics
 	renderer.ResetStatistics()
@@ -85,6 +87,8 @@ func Test_renderHandler(t *testing.T) {
 }
 
 func Test_statisticsHandler(t *testing.T) {
+	// Create new renderer
+	renderer := render.NewRenderer()
 	// Prepare tests data
 	type args struct {
 		handler           http.HandlerFunc
@@ -98,13 +102,13 @@ func Test_statisticsHandler(t *testing.T) {
 		name string
 		args args
 	}{
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=A&str2=B", http.StatusOK, apiResponse{false, "1,2,A,4,B,A,7,8,A,B,11,A,13,14,AB,16,17,A,19,B"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=A&str2=B", http.StatusOK, apiResponse{false, "1,2,A,4,B,A,7,8,A,B,11,A,13,14,AB,16,17,A,19,B"}}},
-		{"Statistics OK", args{statisticsHandler, "GET", "/statistics", "", http.StatusOK, apiResponse{false, render.RequestStatistic{Request: render.Request{Limit: 20, Int1: 3, Int2: 5, Str1: "A", Str2: "B"}, Total: 2}}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
-		{"Render OK", args{renderHandler, "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
-		{"Statistics OK", args{statisticsHandler, "GET", "/statistics", "", http.StatusOK, apiResponse{false, render.RequestStatistic{Request: render.Request{Limit: 20, Int1: 3, Int2: 5, Str1: "AA", Str2: "BBB"}, Total: 3}}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=A&str2=B", http.StatusOK, apiResponse{false, "1,2,A,4,B,A,7,8,A,B,11,A,13,14,AB,16,17,A,19,B"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=A&str2=B", http.StatusOK, apiResponse{false, "1,2,A,4,B,A,7,8,A,B,11,A,13,14,AB,16,17,A,19,B"}}},
+		{"Statistics OK", args{statisticsHandler(renderer), "GET", "/statistics", "", http.StatusOK, apiResponse{false, render.RequestStatistic{Request: render.Request{Limit: 20, Int1: 3, Int2: 5, Str1: "A", Str2: "B"}, Total: 2}}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
+		{"Render OK", args{renderHandler(renderer), "GET", "/render", "limit=20&int1=3&int2=5&str1=AA&str2=BBB", http.StatusOK, apiResponse{false, "1,2,AA,4,BBB,AA,7,8,AA,BBB,11,AA,13,14,AABBB,16,17,AA,19,BBB"}}},
+		{"Statistics OK", args{statisticsHandler(renderer), "GET", "/statistics", "", http.StatusOK, apiResponse{false, render.RequestStatistic{Request: render.Request{Limit: 20, Int1: 3, Int2: 5, Str1: "AA", Str2: "BBB"}, Total: 3}}}},
 	}
 	// Reset statistics
 	renderer.ResetStatistics()

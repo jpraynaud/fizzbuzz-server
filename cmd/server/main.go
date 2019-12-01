@@ -17,13 +17,7 @@ import (
 
 var (
 	environment, addr, tlsCertFile, tlsKeyFile string
-	renderer                                   render.Renderer
 )
-
-func init() {
-	// Init FizzBuzz renderer
-	renderer = render.NewRenderer()
-}
 
 func main() {
 	// Parse flags
@@ -60,9 +54,10 @@ func createRouter() *mux.Router {
 		"address":     addr,
 		"TLS":         (tlsCertFile != "" && tlsKeyFile != ""),
 	}).Info("Create server")
+	renderer := render.NewRenderer()
 	router := mux.NewRouter()
-	router.HandleFunc("/render", renderHandler).Methods(http.MethodGet)
-	router.HandleFunc("/statistics", statisticsHandler).Methods(http.MethodGet)
+	router.HandleFunc("/render", renderHandler(renderer)).Methods(http.MethodGet)
+	router.HandleFunc("/statistics", statisticsHandler(renderer)).Methods(http.MethodGet)
 	router.Use(loggingMiddleware)
 	return router
 }
@@ -102,47 +97,51 @@ func apiError(w http.ResponseWriter, r *http.Request, status int, message string
 }
 
 // Handle FizzBuzz render
-func renderHandler(w http.ResponseWriter, r *http.Request) {
-	// Prepare input parameters
-	vars := r.URL.Query()
-	limit, err := strconv.Atoi(vars.Get("limit"))
-	if err != nil {
-		apiError(w, r, http.StatusBadRequest, fmt.Sprintf("limit parameter must be an integer, value %s was given", vars.Get("limit")))
-		return
-	}
-	int1, err := strconv.Atoi(vars.Get("int1"))
-	if err != nil {
-		apiError(w, r, http.StatusBadRequest, fmt.Sprintf("int1 parameter must be an integer, value %s was given", vars.Get("int1")))
-		return
-	}
-	int2, err := strconv.Atoi(vars.Get("int2"))
-	if err != nil {
-		apiError(w, r, http.StatusBadRequest, fmt.Sprintf("int2 parameter must be an integer, value %s was given", vars.Get("int2")))
-		return
-	}
-	str1 := vars.Get("str1")
-	str2 := vars.Get("str2")
+func renderHandler(renderer render.Renderer) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Prepare input parameters
+		vars := r.URL.Query()
+		limit, err := strconv.Atoi(vars.Get("limit"))
+		if err != nil {
+			apiError(w, r, http.StatusBadRequest, fmt.Sprintf("limit parameter must be an integer, value %s was given", vars.Get("limit")))
+			return
+		}
+		int1, err := strconv.Atoi(vars.Get("int1"))
+		if err != nil {
+			apiError(w, r, http.StatusBadRequest, fmt.Sprintf("int1 parameter must be an integer, value %s was given", vars.Get("int1")))
+			return
+		}
+		int2, err := strconv.Atoi(vars.Get("int2"))
+		if err != nil {
+			apiError(w, r, http.StatusBadRequest, fmt.Sprintf("int2 parameter must be an integer, value %s was given", vars.Get("int2")))
+			return
+		}
+		str1 := vars.Get("str1")
+		str2 := vars.Get("str2")
 
-	// Render request
-	request := render.NewRequest(limit, int1, int2, str1, str2)
-	response := renderer.Render(r.Context(), request)
-	if err := response.Error; err != nil {
-		apiError(w, r, http.StatusBadRequest, err.Error())
-		return
-	}
-	items := make([]string, 0)
-	for item := range response.Items {
-		items = append(items, item)
-	}
+		// Render request
+		request := render.NewRequest(limit, int1, int2, str1, str2)
+		response := renderer.Render(r.Context(), request)
+		if err := response.Error; err != nil {
+			apiError(w, r, http.StatusBadRequest, err.Error())
+			return
+		}
+		items := make([]string, 0)
+		for item := range response.Items {
+			items = append(items, item)
+		}
 
-	// Write response
-	apiResponse := apiResponse{false, strings.Join(items, ",")}
-	json.NewEncoder(w).Encode(apiResponse)
+		// Write response
+		apiResponse := apiResponse{false, strings.Join(items, ",")}
+		json.NewEncoder(w).Encode(apiResponse)
+	}
 }
 
 // Handles rendering statistics
-func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	topStatistic := renderer.GetTopStatistic()
-	apiResponse := apiResponse{false, topStatistic}
-	json.NewEncoder(w).Encode(apiResponse)
+func statisticsHandler(renderer render.Renderer) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		topStatistic := renderer.GetTopStatistic()
+		apiResponse := apiResponse{false, topStatistic}
+		json.NewEncoder(w).Encode(apiResponse)
+	}
 }
