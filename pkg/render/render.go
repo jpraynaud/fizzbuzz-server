@@ -168,10 +168,11 @@ func (s *Statistics) RecordStatistic(request *Request) {
 // GetStatistic returns rendering statistics of a request
 func (s *Statistics) GetStatistic(request *Request) *RequestStatistic {
 	total, _ := s.Totals.Load(*request)
-	if total.(int) == 0 {
+	totalI, _ := total.(int)
+	if totalI == 0 {
 		return nil
 	}
-	return NewRequestStatistic(request, total.(int))
+	return NewRequestStatistic(request, totalI)
 }
 
 // GetTopStatistic returns rendering statistics of the top request
@@ -184,11 +185,4 @@ func (s *Statistics) GetTopStatistic() *RequestStatistic {
 func (s *Statistics) ResetStatistics() {
 	s.Totals = sync.Map{}
 	s.TopRequest = Request{}
-}
-
-func (s *Statistics) debug() {
-	s.Totals.Range(func(k, v interface{}) bool {
-		fmt.Println(k, "=>", v)
-		return true
-	})
 }
